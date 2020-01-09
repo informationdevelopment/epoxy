@@ -5,7 +5,7 @@ window.addEventListener("pageshow", () => {
         tagFields.forEach(updateTagFieldCountBadge);
 
         // Add related item badges
-        const relatedItemGroups = element.querySelectorAll(".related-item-group, .related-items-group");
+        const relatedItemGroups = getRelatedItemGroups(element);
         relatedItemGroups.forEach(updateRelatedItemGroupCountBadge);
 
         // Format phone numbers
@@ -113,6 +113,15 @@ window.addEventListener("pageshow", () => {
         return children;
     }
 
+    const isRelatedItemGroup = el => {
+        return el.classList && (
+            el.classList.contains('related-item-group') ||
+            el.classList.contains('related-items-group')
+        );
+    };
+
+    const getRelatedItemGroups = el => el.querySelectorAll('.related-item-group, .related-items-group');
+
     const isPhoneHeader = el => /Phone$/.test(el.innerText);
 
     const nextElementSibling = el => el.nextElementSibling;
@@ -157,7 +166,9 @@ window.addEventListener("pageshow", () => {
     // Listen for changes
     const observer = new MutationObserver(mutations => {
         mutations.forEach(mutation => {
-            processElement(mutation.target);
+            if (isRelatedItemGroup(mutation.target)) {
+                updateRelatedItemGroupCountBadge(mutation.target);
+            }
         });
     });
     observer.observe(document, { childList: true, subtree: true });
