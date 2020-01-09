@@ -1,0 +1,19 @@
+{
+  "manifest_version": 2,
+  "name": "Epoxy for IT Glue",
+  "version": "0.4.0",
+  "author": "David Haymond",
+  "description": "Extended custom functionality and UI improvements for IT Glue.",
+  "icons": {
+      "16": "icons/16.png",
+      "48": "icons/48.png",
+      "128": "icons/128.png"
+  },
+  "content_scripts": [
+    {
+      "matches": ["https://*.itglue.com/*"],
+      "js": ["epoxy.js"],
+      "css": ["epoxy.css"]
+    }
+  ]
+}

@@ -1,2 +1,2 @@
 # epoxy
-Extended functionality and UI improvements for IT Glue
+Extended functionality and UI improvements for IT Glue.
