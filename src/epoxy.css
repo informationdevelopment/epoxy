@@ -5,3 +5,12 @@
 .epoxy-tag-new-link {
     margin-left: 1em;
 }
+
+.related-item-type .copy-button {
+    opacity: 0.3;
+    color: #000000;
+}
+
+.related-item-type .copy-button:hover {
+    opacity: 0.5;
+}

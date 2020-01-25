@@ -4,9 +4,14 @@ window.addEventListener("pageshow", () => {
         const tagFields = Array.from(element.querySelectorAll(".tags"));
         tagFields.forEach(updateTagFieldCountBadge);
 
-        // Add related item badges
+        // Add related item count badges and copy buttons
         const relatedItemGroups = getRelatedItemGroups(element);
-        relatedItemGroups.forEach(updateRelatedItemGroupCountBadge);
+        relatedItemGroups.forEach(updateRelatedItemGroup);
+
+        const sidebar = element.querySelector('.sidebar');
+        if (sidebar) {
+            addSuperstringSidebarSection(sidebar);
+        }
 
         // Format phone numbers
         const dtList = [...element.querySelectorAll('dt')];
@@ -16,10 +21,6 @@ window.addEventListener("pageshow", () => {
             .map(parsePhoneElement)
             .filter(isNotNull)
             .forEach(createPhoneLink);
-
-        // Fix Autotask integration "Manage" links for configurations
-        const links = element.querySelectorAll('.manage-adapter-link');
-        links.forEach(fixAutotaskConfigurationManageLink);
 
         // Add "New" links to tag fields on FA edit pages
         var tagInputs = element.getElementsByClassName("form-tag tt-input");
@@ -38,7 +39,7 @@ window.addEventListener("pageshow", () => {
             let parent = tagInputs[i].parentNode;
 
             switch (tagType) {
-                    // Organization-specific core assets
+                // Organization-specific core assets
                 case "checklists":
                 case "configurations":
                 case "contacts":
@@ -69,6 +70,12 @@ window.addEventListener("pageshow", () => {
         }
     }
 
+    function fixLinksInElement(element) {
+        // Fix Autotask integration "Manage" links for configurations
+        const links = element.querySelectorAll('.manage-adapter-link');
+        links.forEach(fixAutotaskConfigurationManageLink);
+    }
+
     function updateTagFieldCountBadge(tag) {
         const numberOfTags = getElementChildren(tag).length;
         const countTextNode = document.createTextNode(numberOfTags);
@@ -83,21 +90,100 @@ window.addEventListener("pageshow", () => {
         tagFieldLabel.appendChild(badge);
     }
 
-    function updateRelatedItemGroupCountBadge(relatedItemGroup) {
+    function updateRelatedItemGroup(relatedItemGroup) {
+        const children = getElementChildren(relatedItemGroup);
+        const groupLabel = children[0];
+
         // Create badge
-        var children = getElementChildren(relatedItemGroup);
-        var numberOfRelatedItems = children.length - 1;
-        var countTextNode = document.createTextNode(numberOfRelatedItems);
-        var badge = document.createElement("span");
+        const numberOfRelatedItems = children.length - 1;
+        const countTextNode = document.createTextNode(numberOfRelatedItems);
+        const badge = document.createElement("span");
         badge.className = "badge epoxy-badge";
         badge.appendChild(countTextNode);
 
-        var groupLabel = children[0];
-        var existingBadges = groupLabel.getElementsByClassName("epoxy-badge");
-        for (let badge of existingBadges) {
+        const existingBadges = groupLabel.querySelectorAll(".epoxy-badge");
+        for (const badge of existingBadges) {
             badge.parentNode.removeChild(badge);
         }
         groupLabel.appendChild(badge);
+
+        // Create copy button
+        const button = document.createElement('span');
+        button.className = 'copy-button copy-password-button margin-xsmall-horizontal';
+        button.addEventListener('click', copyRelatedItems);
+        const icon = document.createElement('i');
+        icon.className = 'fa fa-clipboard';
+        button.appendChild(icon);
+        groupLabel.appendChild(button);
+    }
+
+    async function copyRelatedItems(event) {
+        const group = event.currentTarget.closest('ul');
+        const links = group.querySelectorAll('a.name');
+        const items = [...links].map(l => l.textContent.trim()).join('\n');
+        try {
+            await navigator.clipboard.writeText(`${items}\n`);
+            console.log('Copied related items list to the clipboard.');
+        }
+        catch {
+            alert('We were unable to copy the list to the clipboard. Please press Ctrl+Shift+J to open the DevTools console and copy the items from there.');
+            console.log(items);
+        }
+    }
+
+    function addSuperstringSidebarSection(sidebar) {
+        if (hasSuperstring(sidebar)) {
+            return;
+        }
+        // For the cascadepc.itglue.com tenant, add Superstring links
+        if (location.host == 'cascadepc.itglue.com') {
+            const pathTest = /\/(\d+)\/(contacts|configurations)\/(\d+)/;
+            const match = location.pathname.match(pathTest);
+            if (match) {
+                const link = document.createElement('a');
+                link.href =`https://superstring.cascadepc.com/bda/${match[2].slice(0, -1)}/${match[3]}`;
+                link.target = '_blank';
+                link.rel = 'noreferrer noopener';
+                link.appendChild(document.createTextNode('Open in Superstring'));
+                if (match[2] == 'configurations') {
+                    const superstring = document.createElement('div');
+                    superstring.className = 'sidebar-section superstring-section superstring open';
+
+                    const headerContainer = document.createElement('div');
+                    headerContainer.className = 'collapsible-box-header';
+                    const header = document.createElement('h4');
+                    header.appendChild(document.createTextNode('Superstring'));
+                    headerContainer.appendChild(header);
+                    superstring.appendChild(headerContainer);
+
+                    const bodyContainer = document.createElement('div');
+                    bodyContainer.className = 'collapsible-box-body';
+                    const actionLinks = document.createElement('div');
+                    actionLinks.className = 'action-links';
+                    actionLinks.appendChild(link);
+                    bodyContainer.appendChild(actionLinks);
+                    superstring.appendChild(bodyContainer);
+
+                    sidebar.appendChild(superstring);
+                }
+                else {
+                    const superstring = document.createElement('div');
+                    superstring.id = 'superstring';
+                    superstring.className = 'section superstring';
+
+                    const header = document.createElement('h4');
+                    header.appendChild(document.createTextNode('Superstring'));
+                    superstring.appendChild(header);
+
+                    const actionLinks = document.createElement('div');
+                    actionLinks.className = 'action-links';
+                    actionLinks.appendChild(link);
+                    superstring.appendChild(actionLinks);
+
+                    sidebar.appendChild(superstring);
+                }
+            }
+        }
     }
 
     function getElementChildren(element) {
@@ -123,6 +209,15 @@ window.addEventListener("pageshow", () => {
     const getRelatedItemGroups = el => el.querySelectorAll('.related-item-group, .related-items-group');
 
     const isPhoneHeader = el => /Phone$/.test(el.innerText);
+
+    const isSidebar = el => {
+        return el.classList && (
+            el.classList.contains('sidebar') ||
+            el.classList.contains('sidebar-container')
+        );
+    };
+
+    const hasSuperstring = el => el.querySelector('.superstring') != null;
 
     const nextElementSibling = el => el.nextElementSibling;
 
@@ -160,17 +255,29 @@ window.addEventListener("pageshow", () => {
         }
     };
 
-    // Start processing
-    // ==========================
-
     // Listen for changes
     const observer = new MutationObserver(mutations => {
         mutations.forEach(mutation => {
             if (isRelatedItemGroup(mutation.target)) {
-                updateRelatedItemGroupCountBadge(mutation.target);
+                updateRelatedItemGroup(mutation.target);
+            }
+            else if (mutation.target.classList.contains('configuration-sync-section')) {
+                fixLinksInElement(mutation.target);
+            }
+            else if (isSidebar(mutation.target)) {
+                setTimeout(() => { addSuperstringSidebarSection(mutation.target); }, 250);
+            }
+            else {
+                [...mutation.addedNodes].forEach(node => {
+                    if (isRelatedItemGroup(node)) {
+                        updateRelatedItemGroup(node);
+                    }
+                });
             }
         });
     });
     observer.observe(document, { childList: true, subtree: true });
+
+    // Process the document when first loading the page
     processElement(document);
 });
