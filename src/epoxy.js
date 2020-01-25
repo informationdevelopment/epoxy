@@ -13,6 +13,11 @@ window.addEventListener("pageshow", () => {
             addSuperstringSidebarSection(sidebar);
         }
 
+        const flexContainer = element.querySelector('.flex-container');
+        if (flexContainer) {
+            addSuperstringOrganizationSection(flexContainer);
+        }
+
         // Format phone numbers
         const dtList = [...element.querySelectorAll('dt')];
         dtList
@@ -132,57 +137,92 @@ window.addEventListener("pageshow", () => {
     }
 
     function addSuperstringSidebarSection(sidebar) {
-        if (hasSuperstring(sidebar)) {
+        if (location.host != 'cascadepc.itglue.com' || hasSuperstring(sidebar)) {
             return;
         }
+
         // For the cascadepc.itglue.com tenant, add Superstring links
-        if (location.host == 'cascadepc.itglue.com') {
-            const pathTest = /\/(\d+)\/(contacts|configurations)\/(\d+)/;
-            const match = location.pathname.match(pathTest);
-            if (match) {
-                const link = document.createElement('a');
-                link.href =`https://superstring.cascadepc.com/bda/${match[2].slice(0, -1)}/${match[3]}`;
-                link.target = '_blank';
-                link.rel = 'noreferrer noopener';
-                link.appendChild(document.createTextNode('Open in Superstring'));
-                if (match[2] == 'configurations') {
-                    const superstring = document.createElement('div');
-                    superstring.className = 'sidebar-section superstring-section superstring open';
+        // Match URLs for contacts, configurations, or contract items
+        const pathTest = /\/(\d+)\/(contacts|configurations|assets\/92578.+\/records)\/(\d+)/;
+        const match = location.pathname.match(pathTest);
+        if (match) {
+            const link = document.createElement('a');
+            // Use 'contract-item' for contract item pages.
+            // For contacts and configurations, strip off the trailing 's'
+            const assetType = /assets\/92578/.test(match[2]) ? 'contract-item' : match[2].slice(0, -1);
+            link.href =`https://superstring.cascadepc.com/bda/${assetType}/${match[3]}`;
+            link.target = '_blank';
+            link.rel = 'noreferrer noopener';
+            link.appendChild(document.createTextNode('Open in Superstring'));
+            if (match[2] == 'configurations') {
+                const superstring = document.createElement('div');
+                superstring.className = 'sidebar-section superstring-section superstring open';
 
-                    const headerContainer = document.createElement('div');
-                    headerContainer.className = 'collapsible-box-header';
-                    const header = document.createElement('h4');
-                    header.appendChild(document.createTextNode('Superstring'));
-                    headerContainer.appendChild(header);
-                    superstring.appendChild(headerContainer);
+                const headerContainer = document.createElement('div');
+                headerContainer.className = 'collapsible-box-header';
+                const header = document.createElement('h4');
+                header.appendChild(document.createTextNode('Superstring'));
+                headerContainer.appendChild(header);
+                superstring.appendChild(headerContainer);
 
-                    const bodyContainer = document.createElement('div');
-                    bodyContainer.className = 'collapsible-box-body';
-                    const actionLinks = document.createElement('div');
-                    actionLinks.className = 'action-links';
-                    actionLinks.appendChild(link);
-                    bodyContainer.appendChild(actionLinks);
-                    superstring.appendChild(bodyContainer);
+                const bodyContainer = document.createElement('div');
+                bodyContainer.className = 'collapsible-box-body';
+                const actionLinks = document.createElement('div');
+                actionLinks.className = 'action-links';
+                actionLinks.appendChild(link);
+                bodyContainer.appendChild(actionLinks);
+                superstring.appendChild(bodyContainer);
 
-                    sidebar.appendChild(superstring);
-                }
-                else {
-                    const superstring = document.createElement('div');
-                    superstring.id = 'superstring';
-                    superstring.className = 'section superstring';
-
-                    const header = document.createElement('h4');
-                    header.appendChild(document.createTextNode('Superstring'));
-                    superstring.appendChild(header);
-
-                    const actionLinks = document.createElement('div');
-                    actionLinks.className = 'action-links';
-                    actionLinks.appendChild(link);
-                    superstring.appendChild(actionLinks);
-
-                    sidebar.appendChild(superstring);
-                }
+                sidebar.appendChild(superstring);
             }
+            else {
+                const superstring = document.createElement('div');
+                superstring.id = 'superstring';
+                superstring.className = 'section superstring';
+
+                const header = document.createElement('h4');
+                header.appendChild(document.createTextNode('Superstring'));
+                superstring.appendChild(header);
+
+                const actionLinks = document.createElement('div');
+                actionLinks.className = 'action-links';
+                actionLinks.appendChild(link);
+                superstring.appendChild(actionLinks);
+
+                sidebar.appendChild(superstring);
+            }
+        }
+    }
+    
+    function addSuperstringOrganizationSection(container) {
+        if (location.host != 'cascadepc.itglue.com' || hasSuperstring(container)) {
+            return;
+        }
+
+        // For the cascadepc.itglue.com tenant, add Superstring links
+        // Match URLs for contacts, configurations, or contract items
+        const pathTest = /\/(\d+)$/;
+        const match = location.pathname.match(pathTest);
+        if (match) {
+            const link = document.createElement('a');
+            link.href =`https://superstring.cascadepc.com/bda/organization/${match[1]}`;
+            link.target = '_blank';
+            link.rel = 'noreferrer noopener';
+            link.appendChild(document.createTextNode('Open in Superstring'));
+
+            const superstring = document.createElement('div');
+            superstring.className = 'recent-items flex-item superstring';
+
+            const header = document.createElement('h4');
+            header.appendChild(document.createTextNode('Superstring'));
+            superstring.appendChild(header);
+
+            const actionLinks = document.createElement('div');
+            actionLinks.className = 'action';
+            actionLinks.appendChild(link);
+            superstring.appendChild(actionLinks);
+
+            container.appendChild(superstring);
         }
     }
 
@@ -266,6 +306,9 @@ window.addEventListener("pageshow", () => {
             }
             else if (isSidebar(mutation.target)) {
                 setTimeout(() => { addSuperstringSidebarSection(mutation.target); }, 250);
+            }
+            else if (mutation.addedNodes[0] && mutation.addedNodes[0].tagName == 'BODY') {
+                processElement(mutation.addedNodes[0]);
             }
             else {
                 [...mutation.addedNodes].forEach(node => {
