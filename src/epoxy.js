@@ -106,7 +106,8 @@ window.addEventListener("pageshow", () => {
         badge.className = "badge epoxy-badge";
         badge.appendChild(countTextNode);
 
-        const existingBadges = groupLabel.querySelectorAll(".epoxy-badge");
+        // Remove existing badge and add new one
+        const existingBadges = groupLabel.querySelectorAll('.epoxy-badge');
         for (const badge of existingBadges) {
             badge.parentNode.removeChild(badge);
         }
@@ -119,6 +120,12 @@ window.addEventListener("pageshow", () => {
         const icon = document.createElement('i');
         icon.className = 'fa fa-clipboard';
         button.appendChild(icon);
+
+        // Remove existing copy button and add new one
+        const existingButtons = groupLabel.querySelectorAll('.copy-button');
+        for (const btn of existingButtons) {
+            btn.parentNode.removeChild(btn);
+        }
         groupLabel.appendChild(button);
     }
 
