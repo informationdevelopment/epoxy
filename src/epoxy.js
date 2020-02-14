@@ -75,12 +75,6 @@ window.addEventListener("pageshow", () => {
         }
     }
 
-    function fixLinksInElement(element) {
-        // Fix Autotask integration "Manage" links for configurations
-        const links = element.querySelectorAll('.manage-adapter-link');
-        links.forEach(fixAutotaskConfigurationManageLink);
-    }
-
     function updateTagFieldCountBadge(tag) {
         const numberOfTags = getElementChildren(tag).length;
         const countTextNode = document.createTextNode(numberOfTags);
@@ -294,22 +288,11 @@ window.addEventListener("pageshow", () => {
         el.replaceChild(link, el.firstChild);
     };
 
-    const fixAutotaskConfigurationManageLink = link => {
-        const linkTest = /(https:\/\/\w+\.autotask\.net)\/autotask\/views\/ConfigurationManagement\/new_edit_installed_product\.aspx\?InstalledProductID=(\d+)&cmd=edit/i;
-        const result = linkTest.exec(link.href);
-        if (result) {
-            link.href = `${result[1]}/Mvc/CRM/InstalledProductDetail.mvc?installedProductId=${result[2]}`;
-        }
-    };
-
     // Listen for changes
     const observer = new MutationObserver(mutations => {
         mutations.forEach(mutation => {
             if (isRelatedItemGroup(mutation.target)) {
                 updateRelatedItemGroup(mutation.target);
-            }
-            else if (mutation.target.classList.contains('configuration-sync-section')) {
-                fixLinksInElement(mutation.target);
             }
             else if (isSidebar(mutation.target)) {
                 setTimeout(() => { addSuperstringSidebarSection(mutation.target); }, 250);
