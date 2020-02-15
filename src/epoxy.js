@@ -206,7 +206,7 @@ window.addEventListener("pageshow", () => {
         const match = location.pathname.match(pathTest);
         if (match) {
             const link = document.createElement('a');
-            link.href =`https://superstring.cascadepc.com/bda/organization/${match[1]}`;
+            link.href =`https://superstring.cascadepc.com/bda/organizations/${match[1]}`;
             link.target = '_blank';
             link.rel = 'noreferrer noopener';
             link.appendChild(document.createTextNode('Open in Superstring'));
