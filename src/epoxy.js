@@ -263,7 +263,7 @@ window.addEventListener("pageshow", () => {
     const nextElementSibling = el => el.nextElementSibling;
 
     const parsePhoneElement = el => {
-        const phoneTest = /(\d{3})(\d{3})(\d{4})(?:\s+ext\.\s+(\d+))?/;
+        const phoneTest = /\(?(\d{3})(?:\)\s|\-|\.)?(\d{3})[\-\.]?(\d{4})(?:\s+ext\.\s+(\d+))?/;
         const result = phoneTest.exec(el.innerText);
         if (!result) return null;
         return {
