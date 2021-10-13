@@ -148,9 +148,8 @@ window.addEventListener("pageshow", () => {
         const match = location.pathname.match(pathTest);
         if (match) {
             const link = document.createElement('a');
-            // Use 'contract-item' for contract item pages.
-            // For contacts and configurations, strip off the trailing 's'
-            const assetType = /assets\/92578/.test(match[2]) ? 'contract-item' : match[2].slice(0, -1);
+            // Use 'contract-items' for contract item pages.
+            const assetType = /assets\/92578/.test(match[2]) ? 'contract-items' : match[2];
             link.href =`https://superstring.cascadepc.com/bda/${assetType}/${match[3]}`;
             link.target = '_blank';
             link.rel = 'noreferrer noopener';
