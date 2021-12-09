@@ -226,6 +226,17 @@ window.addEventListener("pageshow", () => {
         }
     }
 
+    function fixDattoRmmLinks(element) {
+        const pattern = /https:\/\/([a-z\-]+)\.centrastage\.net\/csm\/device\/summary\/(\d+)/;
+        const links = element.querySelectorAll('a.manage-adapter-link');
+        links.forEach(link => {
+            const match = link.href.match(pattern);
+            if (match) {
+                link.href = `https://${match[1]}rmm.centrastage.net/device/${match[2]}`;
+            }
+        });
+    }
+
     function getElementChildren(element) {
         var childNodes = element.childNodes,
             children = [];
@@ -256,6 +267,8 @@ window.addEventListener("pageshow", () => {
             el.classList.contains('sidebar-container')
         );
     };
+
+    const isIntegrationsSection = (el) => el.classList && el.classList.contains('configuration-sync-section');
 
     const hasSuperstring = el => el.querySelector('.superstring') != null;
 
@@ -295,6 +308,9 @@ window.addEventListener("pageshow", () => {
             }
             else if (isSidebar(mutation.target)) {
                 setTimeout(() => { addSuperstringSidebarSection(mutation.target); }, 250);
+            }
+            else if (isIntegrationsSection(mutation.target)) {
+                fixDattoRmmLinks(mutation.addedNodes[0]);
             }
             else if (mutation.addedNodes[0] && mutation.addedNodes[0].tagName == 'BODY') {
                 processElement(mutation.addedNodes[0]);
