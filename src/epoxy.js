@@ -138,7 +138,17 @@ window.addEventListener("pageshow", () => {
     }
 
     function addSuperstringSidebarSection(sidebar) {
-        if (location.host != 'cascadepc.itglue.com' || hasSuperstring(sidebar)) {
+        if (location.host != 'cascadepc.itglue.com') {
+            return;
+        }
+
+        const sidebarContainer = sidebar.classList.contains('sidebar-container')
+            ? sidebar
+            : sidebar.closest('.sidebar-container') || sidebar;
+        const existingSuperstring = hasSuperstring(sidebarContainer);
+
+        if (existingSuperstring) {
+            sidebarContainer.appendChild(existingSuperstring);
             return;
         }
 
@@ -173,7 +183,7 @@ window.addEventListener("pageshow", () => {
                 bodyContainer.appendChild(actionLinks);
                 superstring.appendChild(bodyContainer);
 
-                sidebar.appendChild(superstring);
+                sidebarContainer.appendChild(superstring);
             }
             else {
                 const superstring = document.createElement('div');
@@ -189,7 +199,7 @@ window.addEventListener("pageshow", () => {
                 actionLinks.appendChild(link);
                 superstring.appendChild(actionLinks);
 
-                sidebar.appendChild(superstring);
+                sidebarContainer.appendChild(superstring);
             }
         }
     }
@@ -270,7 +280,7 @@ window.addEventListener("pageshow", () => {
 
     const isIntegrationsSection = (el) => el.classList && el.classList.contains('configuration-sync-section');
 
-    const hasSuperstring = el => el.querySelector('.superstring') != null;
+    const hasSuperstring = el => el.querySelector('.superstring');
 
     const nextElementSibling = el => el.nextElementSibling;
 
