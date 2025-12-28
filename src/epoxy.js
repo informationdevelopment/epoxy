@@ -150,6 +150,10 @@ window.addEventListener("pageshow", () => {
 
         if (existingSuperstring) {
             if (sidebarContent.lastElementChild !== existingSuperstring) {
+                console.debug('Epoxy: moving Superstring section to end of sidebar.', {
+                    sidebarContent,
+                    existingSuperstring,
+                });
                 sidebarContent.appendChild(existingSuperstring);
             }
             return;
@@ -186,6 +190,10 @@ window.addEventListener("pageshow", () => {
                 bodyContainer.appendChild(actionLinks);
                 superstring.appendChild(bodyContainer);
 
+                console.debug('Epoxy: adding Superstring section to sidebar.', {
+                    sidebarContent,
+                    superstring,
+                });
                 sidebarContent.appendChild(superstring);
             }
             else {
@@ -202,6 +210,10 @@ window.addEventListener("pageshow", () => {
                 actionLinks.appendChild(link);
                 superstring.appendChild(actionLinks);
 
+                console.debug('Epoxy: adding Superstring section to sidebar.', {
+                    sidebarContent,
+                    superstring,
+                });
                 sidebarContent.appendChild(superstring);
             }
         }
