@@ -146,11 +146,30 @@ window.addEventListener("pageshow", () => {
             ? sidebar
             : sidebar.closest('.sidebar-container') || sidebar;
         const sidebarContent = sidebarContainer.querySelector('.sidebar') || sidebarContainer;
-        const existingSuperstring = hasSuperstring(sidebarContainer);
+        const superstringSections = sidebarContainer.querySelectorAll('.superstring');
+        const existingSuperstring = superstringSections[superstringSections.length - 1] || null;
+
+        console.log('Epoxy: sidebar mutation detected.', {
+            sidebar,
+            sidebarContainer,
+            sidebarContent,
+            superstringCount: superstringSections.length,
+        });
 
         if (existingSuperstring) {
+            if (superstringSections.length > 1) {
+                console.warn('Epoxy: removing duplicate Superstring sections.', {
+                    superstringCount: superstringSections.length,
+                    sidebarContent,
+                });
+                superstringSections.forEach((section, index) => {
+                    if (index < superstringSections.length - 1) {
+                        section.remove();
+                    }
+                });
+            }
             if (sidebarContent.lastElementChild !== existingSuperstring) {
-                console.debug('Epoxy: moving Superstring section to end of sidebar.', {
+                console.log('Epoxy: moving Superstring section to end of sidebar.', {
                     sidebarContent,
                     existingSuperstring,
                 });
@@ -190,7 +209,7 @@ window.addEventListener("pageshow", () => {
                 bodyContainer.appendChild(actionLinks);
                 superstring.appendChild(bodyContainer);
 
-                console.debug('Epoxy: adding Superstring section to sidebar.', {
+                console.log('Epoxy: adding Superstring section to sidebar.', {
                     sidebarContent,
                     superstring,
                 });
@@ -210,7 +229,7 @@ window.addEventListener("pageshow", () => {
                 actionLinks.appendChild(link);
                 superstring.appendChild(actionLinks);
 
-                console.debug('Epoxy: adding Superstring section to sidebar.', {
+                console.log('Epoxy: adding Superstring section to sidebar.', {
                     sidebarContent,
                     superstring,
                 });
