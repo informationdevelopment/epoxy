@@ -2,7 +2,7 @@
   "manifest_version": 3,
   "name": "Epoxy for IT Glue",
   "version": "0.7.2",
-  "author": "David Haymond",
+  "author": "Information Development, Inc.",
   "description": "Extended custom functionality and UI improvements for IT Glue.",
   "icons": {
       "16": "icons/16.png",
