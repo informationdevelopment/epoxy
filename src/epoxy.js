@@ -148,8 +148,9 @@ window.addEventListener("pageshow", () => {
         const sidebarContent = sidebarContainer.querySelector('.sidebar') || sidebarContainer;
         const superstringSections = sidebarContainer.querySelectorAll('.superstring');
         const existingSuperstring = superstringSections[superstringSections.length - 1] || null;
+        const superstringHref = getSuperstringSidebarHref();
 
-        console.log('Epoxy: sidebar mutation detected.', {
+        console.debug('Epoxy: sidebar mutation detected.', {
             sidebar,
             sidebarContainer,
             sidebarContent,
@@ -168,8 +169,18 @@ window.addEventListener("pageshow", () => {
                     }
                 });
             }
+            if (superstringHref) {
+                const link = existingSuperstring.querySelector('a[href]');
+                if (link && link.href !== superstringHref) {
+                    console.debug('Epoxy: updating Superstring link href.', {
+                        previousHref: link.href,
+                        nextHref: superstringHref,
+                    });
+                    link.href = superstringHref;
+                }
+            }
             if (sidebarContent.lastElementChild !== existingSuperstring) {
-                console.log('Epoxy: moving Superstring section to end of sidebar.', {
+                console.debug('Epoxy: moving Superstring section to end of sidebar.', {
                     sidebarContent,
                     existingSuperstring,
                 });
@@ -209,7 +220,7 @@ window.addEventListener("pageshow", () => {
                 bodyContainer.appendChild(actionLinks);
                 superstring.appendChild(bodyContainer);
 
-                console.log('Epoxy: adding Superstring section to sidebar.', {
+                console.debug('Epoxy: adding Superstring section to sidebar.', {
                     sidebarContent,
                     superstring,
                 });
@@ -229,13 +240,24 @@ window.addEventListener("pageshow", () => {
                 actionLinks.appendChild(link);
                 superstring.appendChild(actionLinks);
 
-                console.log('Epoxy: adding Superstring section to sidebar.', {
+                console.debug('Epoxy: adding Superstring section to sidebar.', {
                     sidebarContent,
                     superstring,
                 });
                 sidebarContent.appendChild(superstring);
             }
         }
+    }
+
+    function getSuperstringSidebarHref() {
+        // Match URLs for contacts, configurations, or contract items
+        const pathTest = /\/(\d+)\/(contacts|configurations|assets\/92578.+\/records)\/(\d+)/;
+        const match = location.pathname.match(pathTest);
+        if (!match) {
+            return null;
+        }
+        const assetType = /assets\/92578/.test(match[2]) ? 'contract-items' : match[2];
+        return `https://superstring.cascadepc.com/bda/${assetType}/${match[3]}`;
     }
     
     function addSuperstringOrganizationSection(container) {
