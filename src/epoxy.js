@@ -1,4 +1,16 @@
 window.addEventListener("pageshow", () => {
+    const DEBUG_LOGGING = false;
+    const logDebug = (...args) => {
+        if (DEBUG_LOGGING) {
+            console.debug(...args);
+        }
+    };
+    const logWarn = (...args) => {
+        if (DEBUG_LOGGING) {
+            console.warn(...args);
+        }
+    };
+
     function processElement(element) {
         // Add tag field badges
         const tagFields = Array.from(element.querySelectorAll(".tags"));
@@ -129,11 +141,11 @@ window.addEventListener("pageshow", () => {
         const items = [...links].map(l => l.textContent.trim()).join('\n');
         try {
             await navigator.clipboard.writeText(`${items}\n`);
-            console.log('Copied related items list to the clipboard.');
         }
         catch {
-            alert('We were unable to copy the list to the clipboard. Please press Ctrl+Shift+J to open the DevTools console and copy the items from there.');
-            console.log(items);
+            const fallbackMessage = 'We were unable to copy the list automatically. Copy the items from the prompt instead.';
+            const promptMessage = `${fallbackMessage}\n\n${items}`;
+            window.prompt(promptMessage, items);
         }
     }
 
@@ -150,7 +162,7 @@ window.addEventListener("pageshow", () => {
         const existingSuperstring = superstringSections[superstringSections.length - 1] || null;
         const superstringHref = getSuperstringSidebarHref();
 
-        console.debug('Epoxy: sidebar mutation detected.', {
+        logDebug('Epoxy: sidebar mutation detected.', {
             sidebar,
             sidebarContainer,
             sidebarContent,
@@ -159,7 +171,7 @@ window.addEventListener("pageshow", () => {
 
         if (existingSuperstring) {
             if (superstringSections.length > 1) {
-                console.warn('Epoxy: removing duplicate Superstring sections.', {
+                logWarn('Epoxy: removing duplicate Superstring sections.', {
                     superstringCount: superstringSections.length,
                     sidebarContent,
                 });
@@ -172,7 +184,7 @@ window.addEventListener("pageshow", () => {
             if (superstringHref) {
                 const link = existingSuperstring.querySelector('a[href]');
                 if (link && link.href !== superstringHref) {
-                    console.debug('Epoxy: updating Superstring link href.', {
+                    logDebug('Epoxy: updating Superstring link href.', {
                         previousHref: link.href,
                         nextHref: superstringHref,
                     });
@@ -180,7 +192,7 @@ window.addEventListener("pageshow", () => {
                 }
             }
             if (sidebarContent.lastElementChild !== existingSuperstring) {
-                console.debug('Epoxy: moving Superstring section to end of sidebar.', {
+                logDebug('Epoxy: moving Superstring section to end of sidebar.', {
                     sidebarContent,
                     existingSuperstring,
                 });
@@ -220,7 +232,7 @@ window.addEventListener("pageshow", () => {
                 bodyContainer.appendChild(actionLinks);
                 superstring.appendChild(bodyContainer);
 
-                console.debug('Epoxy: adding Superstring section to sidebar.', {
+                logDebug('Epoxy: adding Superstring section to sidebar.', {
                     sidebarContent,
                     superstring,
                 });
@@ -240,7 +252,7 @@ window.addEventListener("pageshow", () => {
                 actionLinks.appendChild(link);
                 superstring.appendChild(actionLinks);
 
-                console.debug('Epoxy: adding Superstring section to sidebar.', {
+                logDebug('Epoxy: adding Superstring section to sidebar.', {
                     sidebarContent,
                     superstring,
                 });
@@ -376,7 +388,12 @@ window.addEventListener("pageshow", () => {
                 setTimeout(() => { addSuperstringSidebarSection(mutation.target); }, 250);
             }
             else if (isIntegrationsSection(mutation.target)) {
-                fixDattoRmmLinks(mutation.addedNodes[0]);
+                const addedNode = mutation.addedNodes[0];
+                if (addedNode && addedNode.nodeType === Node.ELEMENT_NODE) {
+                    fixDattoRmmLinks(addedNode);
+                } else {
+                    fixDattoRmmLinks(mutation.target);
+                }
             }
             else if (mutation.addedNodes[0] && mutation.addedNodes[0].tagName == 'BODY') {
                 processElement(mutation.addedNodes[0]);
