@@ -138,7 +138,54 @@ window.addEventListener("pageshow", () => {
     }
 
     function addSuperstringSidebarSection(sidebar) {
-        if (location.host != 'cascadepc.itglue.com' || hasSuperstring(sidebar)) {
+        if (location.host != 'cascadepc.itglue.com') {
+            return;
+        }
+
+        const sidebarContainer = sidebar.classList.contains('sidebar-container')
+            ? sidebar
+            : sidebar.closest('.sidebar-container') || sidebar;
+        const sidebarContent = sidebarContainer.querySelector('.sidebar') || sidebarContainer;
+        const superstringSections = sidebarContainer.querySelectorAll('.superstring');
+        const existingSuperstring = superstringSections[superstringSections.length - 1] || null;
+        const superstringHref = getSuperstringSidebarHref();
+
+        console.debug('Epoxy: sidebar mutation detected.', {
+            sidebar,
+            sidebarContainer,
+            sidebarContent,
+            superstringCount: superstringSections.length,
+        });
+
+        if (existingSuperstring) {
+            if (superstringSections.length > 1) {
+                console.warn('Epoxy: removing duplicate Superstring sections.', {
+                    superstringCount: superstringSections.length,
+                    sidebarContent,
+                });
+                superstringSections.forEach((section, index) => {
+                    if (index < superstringSections.length - 1) {
+                        section.remove();
+                    }
+                });
+            }
+            if (superstringHref) {
+                const link = existingSuperstring.querySelector('a[href]');
+                if (link && link.href !== superstringHref) {
+                    console.debug('Epoxy: updating Superstring link href.', {
+                        previousHref: link.href,
+                        nextHref: superstringHref,
+                    });
+                    link.href = superstringHref;
+                }
+            }
+            if (sidebarContent.lastElementChild !== existingSuperstring) {
+                console.debug('Epoxy: moving Superstring section to end of sidebar.', {
+                    sidebarContent,
+                    existingSuperstring,
+                });
+                sidebarContent.appendChild(existingSuperstring);
+            }
             return;
         }
 
@@ -173,7 +220,11 @@ window.addEventListener("pageshow", () => {
                 bodyContainer.appendChild(actionLinks);
                 superstring.appendChild(bodyContainer);
 
-                sidebar.appendChild(superstring);
+                console.debug('Epoxy: adding Superstring section to sidebar.', {
+                    sidebarContent,
+                    superstring,
+                });
+                sidebarContent.appendChild(superstring);
             }
             else {
                 const superstring = document.createElement('div');
@@ -189,9 +240,24 @@ window.addEventListener("pageshow", () => {
                 actionLinks.appendChild(link);
                 superstring.appendChild(actionLinks);
 
-                sidebar.appendChild(superstring);
+                console.debug('Epoxy: adding Superstring section to sidebar.', {
+                    sidebarContent,
+                    superstring,
+                });
+                sidebarContent.appendChild(superstring);
             }
         }
+    }
+
+    function getSuperstringSidebarHref() {
+        // Match URLs for contacts, configurations, or contract items
+        const pathTest = /\/(\d+)\/(contacts|configurations|assets\/92578.+\/records)\/(\d+)/;
+        const match = location.pathname.match(pathTest);
+        if (!match) {
+            return null;
+        }
+        const assetType = /assets\/92578/.test(match[2]) ? 'contract-items' : match[2];
+        return `https://superstring.cascadepc.com/bda/${assetType}/${match[3]}`;
     }
     
     function addSuperstringOrganizationSection(container) {
@@ -270,7 +336,7 @@ window.addEventListener("pageshow", () => {
 
     const isIntegrationsSection = (el) => el.classList && el.classList.contains('configuration-sync-section');
 
-    const hasSuperstring = el => el.querySelector('.superstring') != null;
+    const hasSuperstring = el => el.querySelector('.superstring');
 
     const nextElementSibling = el => el.nextElementSibling;
 
